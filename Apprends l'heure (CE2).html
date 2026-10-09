@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apprends l'heure</title>
+<style>
+:root{--bg:#fff8ec;--card:#fff;--tx:#2b2b3a;--mute:#6b6b80;--hr:#e2453c;--mn:#2f6fdb;--ok:#2e9e5b;--ko:#d9534f;--ac:#ffb703;--bd:#e8dcc4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1f2b;--card:#2a2d3d;--tx:#f2f2f7;--mute:#a9abc0;--bd:#41445a;--hr:#ff6b61;--mn:#6ea2ff}}
+:root[data-theme="dark"]{--bg:#1d1f2b;--card:#2a2d3d;--tx:#f2f2f7;--mute:#a9abc0;--bd:#41445a;--hr:#ff6b61;--mn:#6ea2ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS","Comic Sans MS",system-ui,sans-serif;font-size:18px}
+header{text-align:center;padding:14px 10px 4px}
+h1{margin:0 0 8px;font-size:1.6rem}
+.tabs{display:flex;gap:8px;justify-content:center}
+button{font:inherit;cursor:pointer;border:2px solid var(--bd);background:var(--card);color:var(--tx);border-radius:14px;padding:8px 14px}
+button:hover{border-color:var(--ac)}
+button.on{background:var(--ac);border-color:var(--ac);color:#2b2b3a;font-weight:bold}
+main{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:12px;max-width:1000px;margin:auto}
+.clockwrap{flex:1 1 320px;max-width:440px;touch-action:none}
+svg{width:100%;height:auto;display:block;user-select:none;-webkit-user-select:none;touch-action:none}
+#panel{flex:1 1 320px;max-width:520px}
+.card{background:var(--card);border:2px solid var(--bd);border-radius:18px;padding:14px;margin-bottom:12px}
+.digital{font-size:2.6rem;font-weight:bold;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:2px}
+.words{text-align:center;font-size:1.25rem;color:var(--mute);min-height:1.6em}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.hint{color:var(--mute);font-size:.9rem;text-align:center}
+.info p{margin:.4em 0}
+.hrc{color:var(--hr);font-weight:bold}.mnc{color:var(--mn);font-weight:bold}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+td,th{border:1px solid var(--bd);padding:4px 6px;text-align:center}
+.q{font-size:1.5rem;text-align:center;margin:6px 0}
+.q b{font-size:2rem;color:var(--mn)}
+.fb{min-height:3em;text-align:center;font-weight:bold;font-size:1.15rem}
+.fb.ok{color:var(--ok)}.fb.ko{color:var(--ko)}
+select{font:inherit;padding:6px;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)}
+.hand{cursor:grab}
+</style>
+</head>
+<body>
+<header>
+  <h1>🕒 Apprends l'heure</h1>
+  <div class="tabs">
+    <button id="tL" class="on">📖 Apprendre</button>
+    <button id="tE">✏️ S'entraîner</button>
+  </div>
+</header>
+<main>
+  <div class="clockwrap">
+    <svg id="svg" viewBox="0 0 340 340" role="img" aria-label="Horloge à aiguilles déplaçables">
+      <circle cx="170" cy="170" r="132" fill="var(--card)" stroke="var(--tx)" stroke-width="6"/>
+      <g id="ticks"></g>
+      <g id="nums"></g>
+      <g id="mnums" font-size="13" fill="var(--mn)" text-anchor="middle" font-weight="bold"></g>
+      <g id="hh" class="hand">
+        <line x1="170" y1="170" x2="170" y2="106" stroke="transparent" stroke-width="34" stroke-linecap="round"/>
+        <line x1="170" y1="182" x2="170" y2="108" stroke="var(--hr)" stroke-width="12" stroke-linecap="round"/>
+      </g>
+      <g id="mh" class="hand">
+        <line x1="170" y1="170" x2="170" y2="50" stroke="transparent" stroke-width="30" stroke-linecap="round"/>
+        <line x1="170" y1="184" x2="170" y2="52" stroke="var(--mn)" stroke-width="7" stroke-linecap="round"/>
+      </g>
+      <circle cx="170" cy="170" r="9" fill="var(--tx)"/>
+    </svg>
+    <p class="hint">👆 Attrape une aiguille et fais-la tourner !</p>
+  </div>
+
+  <div id="panel">
+    <!-- APPRENDRE -->
+    <div id="pL">
+      <div class="card">
+        <div class="digital" id="dig">12 h 00</div>
+        <div class="words" id="wd"></div>
+        <div class="row">
+          <button data-m="0">Pile</button>
+          <button data-m="15">et quart</button>
+          <button data-m="30">et demie</button>
+          <button data-m="45">moins le quart</button>
+        </div>
+        <div class="row">
+          <button id="am" class="on">☀️ Matin</button>
+          <button id="pm">🌙 Après-midi</button>
+          <button id="tm">🔢 Nombres des minutes</button>
+        </div>
+      </div>
+      <div class="card info">
+        <p><span class="hrc">🔴 La petite aiguille</span> indique les <b>heures</b>.</p>
+        <p><span class="mnc">🔵 La grande aiguille</span> indique les <b>minutes</b>.</p>
+        <p>Quand la grande aiguille fait <b>1 tour</b>, il s'écoule <b>1 heure</b> (60 minutes) et la petite aiguille avance d'un nombre.</p>
+        <p>Une journée dure <b>24 heures</b> : la petite aiguille fait <b>2 tours</b> (matin et après-midi).</p>
+        <table>
+          <tr><th>Grande aiguille sur…</th><th>Minutes</th><th>On dit</th></tr>
+          <tr><td>12</td><td>0</td><td>pile</td></tr>
+          <tr><td>3</td><td>15</td><td>et quart</td></tr>
+          <tr><td>6</td><td>30</td><td>et demie</td></tr>
+          <tr><td>9</td><td>45</td><td>moins le quart</td></tr>
+        </table>
+        <p>⏱️ 1 graduation = <b>1 minute</b>. Chaque nombre = <b>5 minutes</b> (le 1 vaut 5, le 2 vaut 10, le 3 vaut 15…).</p>
+        <p>📏 1 h = 60 min · ¼ h = 15 min · ½ h = 30 min · ¾ h = 45 min.</p>
+        <p>🌞 L'après-midi, on peut ajouter 12 : 1 h → 13 h, 3 h → 15 h, 8 h → 20 h. À minuit : 0 h ; à midi : 12 h.</p>
+      </div>
+    </div>
+
+    <!-- S'ENTRAINER -->
+    <div id="pE" style="display:none">
+      <div class="card">
+        <div class="row" style="margin:0 0 8px">
+          <label>Niveau :
+            <select id="lvl">
+              <option value="1">1 · Heures pile</option>
+              <option value="2" selected>2 · Quarts et demies</option>
+              <option value="3">3 · De 5 en 5 minutes</option>
+              <option value="4">4 · Toutes les minutes</option>
+            </select>
+          </label>
+        </div>
+        <div class="hint" id="prog"></div>
+        <div class="q">Place les aiguilles sur<br><b id="target"></b></div>
+        <div class="hint" id="sub"></div>
+        <div class="row">
+          <button id="chk" class="on">✔️ Vérifier</button>
+          <button id="nxt" style="display:none">➡️ Suivant</button>
+        </div>
+        <div class="fb" id="fb"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const C=170, $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
+const S={h:0,m:0,pm:false}, svg=$('svg');
+const NB=['douze','une','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze'];
+const pad=n=>String(n).padStart(2,'0');
+const pt=(a,r)=>[C+r*Math.sin(a*Math.PI/180),C-r*Math.cos(a*Math.PI/180)];
+
+// Cadran
+for(let i=0;i<60;i++){
+  const big=i%5===0,[x1,y1]=pt(i*6,big?112:121),[x2,y2]=pt(i*6,129),l=document.createElementNS(NS,'line');
+  l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+  l.setAttribute('stroke','var(--tx)');l.setAttribute('stroke-width',big?3:1.5);$('ticks').appendChild(l);
+}
+for(let i=1;i<=12;i++){
+  const [x,y]=pt(i*30,92),t=document.createElementNS(NS,'text');
+  t.setAttribute('x',x);t.setAttribute('y',y+9);t.setAttribute('text-anchor','middle');
+  t.setAttribute('font-size','27');t.setAttribute('font-weight','bold');t.setAttribute('fill','var(--tx)');
+  t.textContent=i;$('nums').appendChild(t);
+  const [mx,my]=pt(i*30,150),u=document.createElementNS(NS,'text');
+  u.setAttribute('x',mx);u.setAttribute('y',my+5);u.textContent=(i*5)%60;$('mnums').appendChild(u);
+}
+$('mnums').style.display='none';
+
+function hl(x){x=x%12||12;return NB[x]+(x>1?' heures':' heure');}
+function words(h,m){
+  const hh=h%12||12,nx=(hh%12)+1;
+  if(m===0)return hl(hh)+(hh===12?' (midi ou minuit)':'');
+  if(m===15)return hl(hh)+' et quart';
+  if(m===30)return hl(hh)+' et demie';
+  if(m===45)return hl(nx)+' moins le quart';
+  if(m<30)return hl(hh)+' '+NB_N(m);
+  return hl(nx)+' moins '+NB_N(60-m);
+}
+function NB_N(n){return n;}
+function fmt(h,m){return h+' h'+(m?' '+pad(m):'');}
+
+function draw(){
+  $('hh').setAttribute('transform',`rotate(${S.h*30+S.m*.5} ${C} ${C})`);
+  $('mh').setAttribute('transform',`rotate(${S.m*6} ${C} ${C})`);
+  if(mode==='learn'){
+    const H=(S.h%12)+(S.pm?12:0);
+    $('dig').textContent=pad(H)+' h '+pad(S.m);
+    $('wd').textContent='Il est '+words(S.h,S.m)+(S.m>0&&S.m!==15&&S.m!==30&&S.m!==45?'':'')+'.';
+  }
+}
+
+// Glisser les aiguilles
+let drag=null;
+function angle(e){
+  const r=svg.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let a=Math.atan2(e.clientX-cx,-(e.clientY-cy))*180/Math.PI;return (a+360)%360;
+}
+['hh','mh'].forEach(id=>$(id).addEventListener('pointerdown',e=>{
+  drag=id;svg.setPointerCapture(e.pointerId);e.preventDefault();
+}));
+svg.addEventListener('pointermove',e=>{
+  if(!drag)return;const a=angle(e);
+  if(drag==='mh'){
+    const nm=Math.round(a/6)%60,pm=S.m;
+    if(pm>45&&nm<15)S.h=(S.h+1)%12;
+    else if(pm<15&&nm>45)S.h=(S.h+11)%12;
+    S.m=nm;
+  }else{
+    S.h=((Math.round((a-S.m*.5)/30)%12)+12)%12;
+  }
+  draw();
+});
+const up=()=>{drag=null;};
+svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+
+// Onglets
+let mode='learn';
+function setMode(m){
+  mode=m;$('tL').classList.toggle('on',m==='learn');$('tE').classList.toggle('on',m==='ex');
+  $('pL').style.display=m==='learn'?'':'none';$('pE').style.display=m==='ex'?'':'none';
+  $('mnums').style.display=(m==='learn'&&showM)||(m==='ex'&&showM)?'':'none';
+  if(m==='ex'){startSeries();}else{draw();}
+}
+let showM=false;
+$('tL').onclick=()=>setMode('learn');$('tE').onclick=()=>setMode('ex');
+$('tm').onclick=()=>{showM=!showM;$('tm').classList.toggle('on',showM);$('mnums').style.display=showM?'':'none';};
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{S.m=+b.dataset.m;draw();});
+$('am').onclick=()=>{S.pm=false;$('am').classList.add('on');$('pm').classList.remove('on');draw();};
+$('pm').onclick=()=>{S.pm=true;$('pm').classList.add('on');$('am').classList.remove('on');draw();};
+
+// Exercices
+const Q={n:0,score:0,th:0,tm:0,done:false};
+const rnd=n=>Math.floor(Math.random()*n);
+function startSeries(){Q.n=0;Q.score=0;nextQ();}
+function nextQ(){
+  if(Q.n>=10){
+    $('target').textContent='Terminé !';$('sub').textContent='';
+    $('fb').className='fb ok';
+    $('fb').textContent=`Score : ${Q.score} / 10 ${Q.score>=9?'🏆':Q.score>=6?'👍':'💪'}`;
+    $('chk').style.display='none';$('nxt').style.display='';$('nxt').textContent='🔁 Rejouer';
+    $('prog').textContent='';Q.n=-1;return;
+  }
+  const lvl=+$('lvl').value;
+  let m=[0,[0,15,30,45],5*rnd(12),rnd(60)][lvl-1];if(Array.isArray(m))m=m[rnd(4)];
+  if(lvl===1)m=0;
+  const H=rnd(24),h12=H%12;let style=rnd(3),txt,sub='';
+  if(style===1&&[0,15,30,45].includes(m)){txt=words(H,m);}
+  else if(style===2&&H>=13){txt=fmt(H,m);sub="L'horloge n'a que 12 nombres : pense à retirer 12 !";}
+  else txt=fmt(h12||12,m);
+  Q.th=h12;Q.tm=m;Q.done=false;Q.n++;
+  S.h=Q.th===6?0:6;S.m=0;draw();
+  $('target').textContent=txt;$('sub').textContent=sub;$('prog').textContent=`Question ${Q.n} / 10 · Score : ${Q.score}`;
+  $('fb').textContent='';$('fb').className='fb';
+  $('chk').style.display='';$('nxt').style.display='none';
+}
+$('chk').onclick=()=>{
+  if(Q.done)return;
+  const okH=S.h===Q.th,okM=S.m===Q.tm;
+  if(okH&&okM){Q.score++;Q.done=true;$('fb').className='fb ok';$('fb').textContent='🎉 Bravo, c\'est exact !';
+    $('chk').style.display='none';$('nxt').style.display='';$('nxt').textContent='➡️ Suivant';
+    $('prog').textContent=`Question ${Q.n} / 10 · Score : ${Q.score}`;}
+  else{
+    $('fb').className='fb ko';
+    $('fb').textContent=(!okM&&!okH)?'Pas encore : regarde les deux aiguilles.':!okM?'Presque ! Vérifie la grande aiguille (les minutes).':'Presque ! Vérifie la petite aiguille (les heures).';
+    $('chk').textContent='✔️ Revérifier';
+    if(!Q.tried){Q.tried=1;}
+    $('nxt').style.display='';$('nxt').textContent='⏭️ Passer';
+  }
+};
+$('nxt').onclick=()=>{
+  $('chk').textContent='✔️ Vérifier';Q.tried=0;
+  if(Q.n===-1){startSeries();return;}
+  nextQ();
+};
+$('lvl').onchange=startSeries;
+draw();
+</script>
+</body>
+</html>
